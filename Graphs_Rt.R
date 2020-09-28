@@ -65,5 +65,22 @@ rest <- estimate_R(
   )
 )
 
-### 6. Plots ###
+### 6. Plot R_t ###
 plot(rest)
+
+### 7. Fallecidos ###
+data_dead <- data_filter %>%
+    filter(atenci_n == "Fallecido")
+
+### 7.1 Aggregate data ###
+dead_agg <- data_dead %>%
+  group_by(fis) %>%
+  summarise(nb = sum(nb))
+
+p <- ggplot(data = dead_agg, aes(x = as.Date(fis), y = nb)) +
+  geom_bar(stat = "identity", width = 0.5) + 
+  ggtitle(paste0("Daily Deaths for ", city_input)) + 
+  theme(plot.title = element_text(hjust = 0.5))
+  
+p
+
