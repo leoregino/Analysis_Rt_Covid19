@@ -68,7 +68,14 @@ rest <- estimate_R(
 ### 6. Plot R_t ###
 plot(rest)
 
-### 7. Fallecidos ###
+### 7. Mirror plot [New Cases] vs [Daily Deaths] ###
+
+# 7.1 New Cases #
+new_agg <- data_filter %>%
+  group_by(fis) %>%
+  summarise(nb = sum(nb))
+
+# 7.2 Daily Deaths #
 data_dead <- data_filter %>%
     filter(atenci_n == "Fallecido")
 
@@ -77,9 +84,16 @@ dead_agg <- data_dead %>%
   group_by(fis) %>%
   summarise(nb = sum(nb))
 
-p <- ggplot(data = dead_agg, aes(x = as.Date(fis), y = nb)) +
-  geom_bar(stat = "identity", width = 0.5) + 
-  ggtitle(paste0("Daily Deaths for ", city_input)) + 
+
+new_agg$type <- "New Case"
+dead_agg$type <- "Death"
+dead_agg$nb <- -dead_agg$nb
+
+mirror_plot_data <- rbind(new_agg, dead_agg)
+
+p <- ggplot(data = mirror_plot_data, aes(x = as.Date(fis), y = nb , fill = type)) +
+  geom_bar(stat = "identity", position = "identity") + 
+  ggtitle(paste0("New Cases vs Daily Deaths for ", city_input)) +
   theme(plot.title = element_text(hjust = 0.5))
   
 p
