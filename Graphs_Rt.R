@@ -98,3 +98,19 @@ p <- ggplot(data = mirror_plot_data, aes(x = as.Date(fis), y = nb , fill = type)
   
 p
 
+q <- ggplot(mirror_plot_data, aes(x=as.Date(fis), y= nb, fill=type)) + 
+  facet_wrap(~ type, scales = "free_x") + 
+  geom_col() + 
+  coord_flip() +
+  scale_y_continuous( expand = c(0, 0), labels = function(x) signif(abs(x), 3)) +
+  theme(panel.spacing.x = unit(0, "mm") , text = element_text(angle=(-30))) 
+  
+
+q
+
+# Horizontal axis #
+q <- ggplot(mirror_plot_data, aes(x=as.Date(fis), y= nb, fill=type)) + 
+  geom_bar(stat = "identity", position = "identity") + 
+  facet_wrap(~ type, scales = "free_x") 
+  
+q
