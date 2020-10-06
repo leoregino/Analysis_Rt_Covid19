@@ -24,7 +24,7 @@ max_date <- max(data_filter$fis)
 
 ### If specific date interval is needed: ###
 # min_date <- "2020-03-09T00:00:00.000"
-# max_date <- "2020-08-03T00:00:00.000"
+#max_date <- "2020-09-15T00:00:00.000"
 
 
 ### 3. Filter Data ###
@@ -66,7 +66,12 @@ rest <- estimate_R(
 )
 
 ### 6. Plot R_t ###
-plot(rest)
+
+p_Rt <- plot(rest, "R", legend = FALSE)
+p_inc <- plot(rest, "incid", legend = FALSE)
+
+gridExtra::grid.arrange(p_inc, p_Rt, ncol = 1)
+
 
 ### 7. Mirror plot [New Cases] vs [Daily Deaths] ###
 
@@ -98,7 +103,7 @@ mirror_plot_data$fis <-  as.Date(mirror_plot_data$fis)
 q <- ggplot(mirror_plot_data, aes(x=fis, y= nb, fill=type)) + 
   geom_bar(stat = "identity", position = "identity") + 
   scale_fill_manual( values =  c("dodgerblue", "coral2") ) +
-  ggtitle(paste0("New cases vs Daily Deaths for " , city_input) ) + 
+  ggtitle(paste0("New cases vs Daily Deaths for " , "Colombia") ) + 
   theme(plot.title = element_text(hjust = 0.5)) + 
   facet_grid(type ~ . , scales = "free_y")
 
