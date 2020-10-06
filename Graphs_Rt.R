@@ -85,32 +85,25 @@ dead_agg <- data_dead %>%
   summarise(nb = sum(nb))
 
 
-new_agg$type <- "New Case"
-dead_agg$type <- "Death"
+new_agg$type <- "1. New Cases"
+dead_agg$type <- "2. Deaths"
 dead_agg$nb <- -dead_agg$nb
 
 mirror_plot_data <- rbind(new_agg, dead_agg)
 
-p <- ggplot(data = mirror_plot_data, aes(x = as.Date(fis), y = nb , fill = type)) +
-  geom_bar(stat = "identity", position = "identity") + 
-  ggtitle(paste0("New Cases vs Daily Deaths for ", city_input)) +
-  theme(plot.title = element_text(hjust = 0.5))
-  
-p
+mirror_plot_data$fis <-  as.Date(mirror_plot_data$fis)
 
-q <- ggplot(mirror_plot_data, aes(x=as.Date(fis), y= nb, fill=type)) + 
-  facet_wrap(~ type, scales = "free_x") + 
-  geom_col() + 
-  coord_flip() +
-  scale_y_continuous( expand = c(0, 0), labels = function(x) signif(abs(x), 3)) +
-  theme(panel.spacing.x = unit(0, "mm") , text = element_text(angle=(-30))) 
-  
+
+### Plot ### 
+q <- ggplot(mirror_plot_data, aes(x=fis, y= nb, fill=type)) + 
+  geom_bar(stat = "identity", position = "identity") + 
+  scale_fill_manual( values =  c("dodgerblue", "coral2") ) +
+  ggtitle(paste0("New cases vs Daily Deaths for " , city_input) ) + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  facet_grid(type ~ . , scales = "free_y")
 
 q
 
-# Horizontal axis #
-q <- ggplot(mirror_plot_data, aes(x=as.Date(fis), y= nb, fill=type)) + 
-  geom_bar(stat = "identity", position = "identity") + 
-  facet_wrap(~ type, scales = "free_x") 
-  
-q
+###
+
+
