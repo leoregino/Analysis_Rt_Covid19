@@ -4,6 +4,8 @@ library(jsonlite)
 library(tidyverse)
 library(ggplot2)
 library(EpiEstim)
+library(grid)
+library(gridExtra)
 
 ### 1. Load file from local ###
 file_name <- "C:/Users/Leonardo REGINO/Documents/DATAMINH/Covid19/Dashboards/Data/Data_Covid19_Colombia.csv"
@@ -24,7 +26,7 @@ max_date <- max(data_filter$fis)
 
 ### If specific date interval is needed: ###
 # min_date <- "2020-03-09T00:00:00.000"
-#max_date <- "2020-09-15T00:00:00.000"
+# max_date <- "2020-09-15T00:00:00.000"
 
 
 ### 3. Filter Data ###
@@ -65,13 +67,52 @@ rest <- estimate_R(
   )
 )
 
+
+rest_param <- estimate_R(
+  data_agg,
+  method = "parametric_si",
+  config = make_config(
+    list( mean_si = 4.8 , std_si = 2.6
+    )
+  )
+)
+
+
+
+## TODO ##
+## Implementar con distribuciones Gamma y Log Normal ##
+
+n_days <- nrow(data_agg)
+mean_c19_si <- 3.95
+sd_c19_si <- 1.51
+
+rest_gamma <- estimate_R(
+  data_agg,
+  method = "non_parametric_si",
+  config = make_config(
+    list( si_distr = discr_si(seq(0, n_days), mean_c19_si , sd_c19_si)
+    )
+  )
+)
+
+
 ### 6. Plot R_t ###
+
+
+p_inc_gamma <- plot(rest_gamma, "incid", legend = FALSE)
+p_Rt_gamma <- plot(rest_gamma, "R", legend = FALSE)
+gridExtra::grid.arrange(p_inc_gamma, p_Rt_gamma, ncol = 1 , top = textGrob("GAMMA") )
+
 
 p_Rt <- plot(rest, "R", legend = FALSE)
 p_inc <- plot(rest, "incid", legend = FALSE)
 
-gridExtra::grid.arrange(p_inc, p_Rt, ncol = 1)
+gridExtra::grid.arrange(p_inc, p_Rt, ncol = 1 , top = textGrob("Mean and Std Fitted"))
 
+p_Rt_parm <- plot(rest_param, "R", legend = FALSE)
+p_inc_parm <- plot(rest_param, "incid", legend = FALSE)
+
+gridExtra::grid.arrange(p_inc_parm, p_Rt_parm, ncol = 1 , top = textGrob("Mean=4.8, STD=2.6") )
 
 ### 7. Mirror plot [New Cases] vs [Daily Deaths] ###
 
