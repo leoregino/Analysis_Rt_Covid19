@@ -8,7 +8,7 @@ library(EpiEstim)
 
 ### 1. Load from web ### 
 url <- "https://www.datos.gov.co/resource/gt2j-8ykr.json?$limit="
-nb_limit <- "1000000"
+nb_limit <- "2000000"
 datosImport <- fromJSON(paste0(url,nb_limit))
 
 ### 2. Columns containing NA in JSON ###
@@ -24,7 +24,7 @@ for (nom_col in colnames(datosImport)){
       col_NA[nrow(col_NA) + 1,] = c(nom_col, round(nro_NA/total_row*100,1)  )
     }
 }
-col_NA$Nb_NA <- as.numeric(col_NA$Nb_NA) 
+col_NA$Perc_NA <- as.numeric(col_NA$Perc_NA) 
 
 ### 2.2 Plot Percentage of missing values in columns ###
 q <- ggplot(data = col_NA, aes(x = Variable, y = Perc_NA) ) +
