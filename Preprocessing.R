@@ -8,8 +8,9 @@ library(EpiEstim)
 
 ### 1. Load from web ### 
 url <- "https://www.datos.gov.co/resource/gt2j-8ykr.json?$limit="
-nb_limit <- "2000000"
+nb_limit <- "1500000"
 datosImport <- fromJSON(paste0(url,nb_limit))
+
 
 ### 2. Columns containing NA in JSON ###
 total_row <- nrow(datosImport)
@@ -36,32 +37,37 @@ q
 
 ### 3. TREAT THE MISSING VALUES ###
 
-# 3.1. [pa_s_de_procedencia]: If NA --> Assign = COLOMBIA
-datosImport[is.na.data.frame(datosImport$pa_s_de_procedencia), ]$pa_s_de_procedencia <- "COLOMBIA"
 
-# 3.2. [fecha_diagnostico]: If NA --> Assign = 0001-01-01T00:00:00.000
+# 3.1 [fecha_diagnostico]. If NA --> Assign = fecha_reporte_web
 datosImport[is.na.data.frame(datosImport$fecha_diagnostico), ]$fecha_diagnostico <- datosImport[is.na.data.frame(datosImport$fecha_diagnostico), ]$fecha_reporte_web
 
-# 3.3. [fis]: If NA --> Assign = fecha_diagnostico - 10
-datosImport[is.na.data.frame(datosImport$fis), ]$fis <- datosImport[is.na.data.frame(datosImport$fis), ]$fecha_diagnostico
+# 3.2 [fecha_inicio_sintomas]. If NA --> ASINTOMATICO (create Variable: TIPO -> ("Sintomatico","Asintimatico"))
 
-# 3.4. [fecha_recuperado]: IF NA --> 0001-01-01T00:00:00.000
-datosImport[is.na.data.frame(datosImport$fecha_recuperado), ]$fecha_recuperado <-  "0001-01-01T00:00:00.000"
 
-# 3.5. [tipo_recuperaci_n]: If NA (Vivo o Fallecido) --> Assign = "NA" 
-datosImport[is.na.data.frame(datosImport$tipo_recuperaci_n), ]$tipo_recuperaci_n <-  "NA" 
+# 3.3 [fecha_muerte]. If NA --> NO FALLECIDO. Nothing to be done.
 
-# 3.6. [codigo_pais]: If NA (COLOMBIA) --> Assign = 170 (code ISO 3166-1)
-datosImport[is.na.data.frame(datosImport$codigo_pais), ]$codigo_pais <-  170 
 
-# 3.7. [nombre_grupo_etnico]: IF NA <-- Assign = "Otro"
-datosImport[is.na.data.frame(datosImport$nombre_grupo_etnico), ]$nombre_grupo_etnico <-  "Otro" 
+# 3.4 [fecha_recuperado]. If NA --> FALLECIDO o ABIERTO. Nothing to be done.
 
-# 3.8. [fecha_de_muerte]: IF NA (vivo o Recuperado ) <-- Assign = 0001-01-01T00:00:00.000 
-datosImport[is.na.data.frame(datosImport$fecha_de_muerte), ]$fecha_de_muerte <-  "0001-01-01T00:00:00.000" 
 
-# 3.9. [pertenencia_etnica]: IG NA --> Assign = "Otro"
-datosImport[is.na.data.frame(datosImport$pertenencia_etnica), ]$pertenencia_etnica <-  "Otro" 
+# 3.5 [nom_grupo_]. 98.5% NA --> Drop column.
+datosImport <- select(datosImport, -nom_grupo_)
+
+# 3.6 [pais_viajo_1_cod]. 99.9% NA --> Drop column. Info in fuente_tipo_contagio = IMPORTADO.
+datosImport <- select(datosImport, -pais_viajo_1_cod)
+
+# 3.7 [pais_viajo_1_nom]. 99.9% NA --> Drop column. Info in fuente_tipo_contagio = IMPORTADO.
+datosImport <- select(datosImport, -pais_viajo_1_nom)
+
+# 3.8 [per_etn_]. IF NA --> Assig: 0
+datosImport[is.na.data.frame(datosImport$per_etn_),]$per_etn_ <- "0"
+
+# 3.9 [recuperado]. IF NA --> If fecha_muerte IS NOT NULL --> Assign: FALLECIDO 
+
+
+# 3.10 [tipo_recuperacion]. IF NA --> Not recovered yet. Assig -> "ACTIVO O FALLECIDO" 
+datosImport[is.na.data.frame(datosImport$tipo_recuperacion),]$tipo_recuperacion <- "ACTIVO O FALLECIDO"
+
 
 
 ### 4. WRITE CSV ###
